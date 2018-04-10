@@ -85,7 +85,7 @@ In Type-II classification, we classify a node to be
 # Output 
 **The output file will contain a table:**                           
 ```
-Column1 :  node                                  
+Column1 : node                                  
 Column2 : type of in_node(-node)                                  
 Column3 : Change in total driver nodes if we remove in_node(-node)                                   
 Column4 : Change in driver nodes in in_part if we remove in_node(-node)                            
@@ -93,7 +93,7 @@ Column5 : type of out_node(+node)
 Column6 : Change in total driver nodes if we remove out_node(+node)                              
 Column7 : Change in driver nodes in in_part if we remove out_node(+node)                              
 Column8 : Change in total driver nodes if we remove this node(-node and +node)                            
-Column9 : Chnage in driver nodes in in_part if we remove this node(-node and +node) 
+Column9 : Change in driver nodes in in_part if we remove this node(-node and +node) 
 ```
 
 **In the console, we will have following output:**
