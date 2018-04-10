@@ -66,17 +66,43 @@ So first install networkx library.
   `AS : always saturated nodes. The nodes which are matched in all maximum matchings.`                                                                             
   `SSSU : sometimes saturated, sometimes unsaturated nodes. The nodes which are saturated in some maximum matchings and unsaturated     in some matchings.` 
 
-- The time complexity of the above algorithm is the same as that of the Hopcroft-Karp algorithm, which is O(N^1/2L).
+- The time complexity of the above algorithm is the same as that of the Hopcroft-Karp algorithm, which is O(N^1/2L).             
+```
+N_D : Number of driver nodes
+
+Note that in Type-I classification, we classify a node to be
+1) critical if in its absence we have to control more driver nodes. For example, remove one node in the middle of a directed path will cause N_D increase. 
+2) redundant if in its absence we need to control less driver nodes. For example, remove one leaf node in a star will decrease N_D by 1. 
+3) ordinary if in its absence we need to control the same number of driver nodes. For example, remove the central hub in a star will not change N_D at all.
+
+In Type-II classification, we classify a node to be 
+1) critical if it belongs to all the driver node sets, i.e. we have to always control it. We can rigorously prove that a node is critical if and only if it has zero in-degree, i.e. kin=0. 
+2) redundant if it belongs to no driver node sets, so we never need to control them. 
+3) ordinary if it belongs to some but not all driver node sets.
+```
 
 
-# Output
-The output file will contain a table:                                    
-Column1: node                                  
-Column2: type of in_node(-node)                                  
-Column3: Change in total driver nodes if we remove in_node(-node)                                   
-Column4: Change in driver nodes in in_part if we remove in_node(-node)                            
-Column5: type of out_node(+node)                                
-Column6: Change in total driver nodes if we remove out_node(+node)                              
-Column7: Change in driver nodes in in_part if we remove out_node(+node)                              
-Column8: Change in total driver nodes if we remove this node(-node and +node)                            
-Column9: Chnage in driver nodes in in_part if we remove this node(-node and +node)                        
+# Output 
+**The output file will contain a table:**                           
+```
+Column1 :  node                                  
+Column2 : type of in_node(-node)                                  
+Column3 : Change in total driver nodes if we remove in_node(-node)                                   
+Column4 : Change in driver nodes in in_part if we remove in_node(-node)                            
+Column5 : type of out_node(+node)                                
+Column6 : Change in total driver nodes if we remove out_node(+node)                              
+Column7 : Change in driver nodes in in_part if we remove out_node(+node)                              
+Column8 : Change in total driver nodes if we remove this node(-node and +node)                            
+Column9 : Chnage in driver nodes in in_part if we remove this node(-node and +node) 
+```
+
+**In the console, we will have following output:**
+```
+Nd : Number of driver nodes
+nc_1 : Number of Type-I critical nodes
+nr_1 : Number of Type-I redundant nodes
+no_1 : Number of Type-I ordinary nodes
+nc_2 : Number of Type-II critical nodes
+nc_2 : Number of Type-II redundant nodes
+nc_2 : Number of Type-II ordinary nodes
+```
