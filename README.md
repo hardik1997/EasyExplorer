@@ -71,14 +71,14 @@ So first install networkx library.
 N_D : Number of driver nodes
 
 Note that in Type-I classification, we classify a node to be
-1) critical if in its absence we have to control more driver nodes. For example, remove one node in the middle of a directed path will cause N_D increase. 
-2) redundant if in its absence we need to control less driver nodes. For example, remove one leaf node in a star will decrease N_D by 1. 
-3) ordinary if in its absence we need to control the same number of driver nodes. For example, remove the central hub in a star will not change N_D at all.
+1) nc_1: critical if in its absence we have to control more driver nodes. For example, remove one node in the middle of a directed path will cause N_D increase. 
+2) nr_1: redundant if in its absence we need to control less driver nodes. For example, remove one leaf node in a star will decrease N_D by 1. 
+3) no_1 :ordinary if in its absence we need to control the same number of driver nodes. For example, remove the central hub in a star will not change N_D at all.
 
 In Type-II classification, we classify a node to be 
-1) critical if it belongs to all the driver node sets, i.e. we have to always control it. We can rigorously prove that a node is critical if and only if it has zero in-degree, i.e. kin=0. 
-2) redundant if it belongs to no driver node sets, so we never need to control them. 
-3) ordinary if it belongs to some but not all driver node sets.
+1) nc_2: critical if it belongs to all the driver node sets, i.e. we have to always control it. We can rigorously prove that a node is critical if and only if it has zero in-degree, i.e. kin=0. 
+2) nr_2: redundant if it belongs to no driver node sets, so we never need to control them. 
+3) no_2: ordinary if it belongs to some but not all driver node sets.
 ```
 
 
@@ -103,6 +103,6 @@ nc_1 : Number of Type-I critical nodes
 nr_1 : Number of Type-I redundant nodes
 no_1 : Number of Type-I ordinary nodes
 nc_2 : Number of Type-II critical nodes
-nc_2 : Number of Type-II redundant nodes
-nc_2 : Number of Type-II ordinary nodes
+nr_2 : Number of Type-II redundant nodes
+no_2 : Number of Type-II ordinary nodes
 ```
