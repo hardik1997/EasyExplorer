@@ -30,3 +30,7 @@ So first install networkx library.
 
 | Type of in_node|Type of out_node| result |
 | ---------------|:--------------:| ------:|
+
+
+
+- The time complexity of the above algorithm is the same as that of the Hopcroft-Karp algorithm, which is O(N^1/2L).
