@@ -19,6 +19,26 @@ So first install networkx library.
 - For a directed network G(V, E), find its corresponding bipartite graph B(V_out, V_in, E). Let the initial matching M = {};
 - Find all the alternating paths of all unmatched nodes in V_in, and store the nodes of alternate paths in V_in as `candidate nodes`.                  
 `Candidate nodes are nodes, which might become driver nodes`
+  We used Breadth First Search to find if there exist an augmenting path or not.
+  
+  ```def breadthfirstSearch(self, f):
+        isAvailable = False
+        del self.unmatched[:]
+        for node in self.Graph:
+            self.d[node] = 0
+            if self.marked[node] == None and node < 0:
+                self.unmatched.append(node)
+        for node in self.unmatched:
+            for src in self.Graph.neighbors(node):
+                if self.d[src] == 0:
+                    self.d[src] = self.d[node] + 1
+                    if self.marked[src] == None:
+                        isAvailable = True
+                    else:
+                        self.d[self.marked[src]] = self.d[src] + 1
+                        self.unmatched.append(self.marked[src])
+        return isAvailable```
+
 - If set of alternate paths contain augmenting paths, expand all augmenting paths and obtain a new matching M’. Clear all candidate nodes, M = M’ and return to step 2.
 - If there exists no augmenting path, then the the unmatched nodes are the driver nodes of G.
 - Now we have all AU, AS and SSSU nodes.                                   
