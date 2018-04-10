@@ -18,10 +18,10 @@ So first install networkx library.
   
 - For a directed network G(V, E), find its corresponding bipartite graph B(V_out, V_in, E). Let the initial matching M = {};
 - Find all the alternating paths of all unmatched nodes in V_in, and store the nodes of alternate paths in V_in as `candidate nodes`.                  
-`Candidate nodes are nodes, which might become driver nodes`
-  We used Breadth First Search to find if there exist an augmenting path or not.
+`Candidate nodes are nodes, which might become driver nodes`                       
+  We used Breadth First Search to find if there exist an augmenting path or not.                     
   
-  ```def breadthfirstSearch(self, f):
+ ``` def breadthfirstSearch(self, f):
         isAvailable = False
         del self.unmatched[:]
         for node in self.Graph:
@@ -37,20 +37,43 @@ So first install networkx library.
                     else:
                         self.d[self.marked[src]] = self.d[src] + 1
                         self.unmatched.append(self.marked[src])
-        return isAvailable```
+        return isAvailable       
 
-- If set of alternate paths contain augmenting paths, expand all augmenting paths and obtain a new matching M’. Clear all candidate nodes, M = M’ and return to step 2.
-- If there exists no augmenting path, then the the unmatched nodes are the driver nodes of G.
-- Now we have all AU, AS and SSSU nodes.                                   
+
+- If set of alternate paths contain augmenting paths, expand all augmenting paths and obtain a new matching M’. Clear all candidate nodes, M = M’ and return to step 2.                               
+  We used DepthFirstSearch to find new matching M'.                              
+  
+  
+ ``` def depthFirstSearch(self, v):
+        for node in self.Graph.neighbors(v):
+            if self.d[node] == self.d[v] + 1:
+                self.d[node] = 0
+                if self.marked[node] == None or self.depthFirstSearch(self.marked[node]):
+                    self.marked[node] = v
+                    self.marked[v] = node
+                    return True
+        return False                      
+        
+        
+- If there exists no augmenting path, then the the unmatched nodes are the driver nodes of G.                   
+- Now we have all AU, AS and SSSU nodes.                      
+
+
   `AU : always unsaturated nodes. The nodes which are unmatched in all maximum matchings.`                                                        
   `AS : always saturated nodes. The nodes which are matched in all maximum matchings.`                                                                             
-  `SSSU : sometimes saturated, sometimes unsaturated nodes. The nodes which are saturated in some maximum matchings and unsaturated     in some matchings.`
-
-- Now, we find that after deleting a node from graph, what will be the effect on the number of driver nodes. So, what we have found out is as follows:   
-
-| Type of in_node|Type of out_node| result |
-| ---------------|:--------------:| ------:|
-
-
+  `SSSU : sometimes saturated, sometimes unsaturated nodes. The nodes which are saturated in some maximum matchings and unsaturated     in some matchings.` 
 
 - The time complexity of the above algorithm is the same as that of the Hopcroft-Karp algorithm, which is O(N^1/2L).
+
+
+# Output
+The output file will contain a table:
+Column1: node
+Column2: type of in_node(-node)
+Column3: Change in total driver nodes if we remove in_node(-node)
+Column4: Change in driver nodes in in_part if we remove in_node(-node)
+Column5: type of out_node(+node)
+Column6: Change in total driver nodes if we remove out_node(+node)
+Column7: Change in driver nodes in in_part if we remove out_node(+node)
+Column8: Change in total driver nodes if we remove this node(-node and +node)
+Column9: Chnage in driver nodes in in_part if we remove this node(-node and +node)
