@@ -71,14 +71,14 @@ So first install networkx library.
 N_D : Number of driver nodes
 
 Note that in Type-I classification, we classify a node to be
-1) nc_1: critical if in its absence we have to control more driver nodes. For example, remove one node in the middle of a directed path will cause N_D increase. 
-2) nr_1: redundant if in its absence we need to control less driver nodes. For example, remove one leaf node in a star will decrease N_D by 1. 
-3) no_1 :ordinary if in its absence we need to control the same number of driver nodes. For example, remove the central hub in a star will not change N_D at all.
+1) Nc_1: critical if in its absence we have to control more driver nodes. For example, remove one node in the middle of a directed path will cause N_D increase. 
+2) Nr_1: redundant if in its absence we need to control less driver nodes. For example, remove one leaf node in a star will decrease N_D by 1. 
+3) No_1 :ordinary if in its absence we need to control the same number of driver nodes. For example, remove the central hub in a star will not change N_D at all.
 
 In Type-II classification, we classify a node to be 
-1) nc_2: critical if it belongs to all the driver node sets, i.e. we have to always control it. We can rigorously prove that a node is critical if and only if it has zero in-degree, i.e. kin=0. 
-2) nr_2: redundant if it belongs to no driver node sets, so we never need to control them. 
-3) no_2: ordinary if it belongs to some but not all driver node sets.
+1) Nc_2: critical if it belongs to all the driver node sets, i.e. we have to always control it. We can rigorously prove that a node is critical if and only if it has zero in-degree, i.e. kin=0. 
+2) Nr_2: redundant if it belongs to no driver node sets, so we never need to control them. 
+3) No_2: ordinary if it belongs to some but not all driver node sets.
 ```
 
 
@@ -94,6 +94,14 @@ Column6 : Change in total driver nodes if we remove out_node(+node)
 Column7 : Change in driver nodes in in_part if we remove out_node(+node)                              
 Column8 : Change in total driver nodes if we remove this node(-node and +node)                            
 Column9 : Change in driver nodes in in_part if we remove this node(-node and +node) 
+```
+**Notation used in above table:**                   
+```
+Vin(-ve) - copy of the V which is connected to in-edge                
+Vin(+ve) - copy of the V which is connected to out-edge          
+node - column titled node describes whether it is AU,AS or SSSU            
+d_global - change in total number of driver nodes after removing a node          
+d_in - change in total number of driver nodes in in-part after removing a node$             
 ```
 
 **In the console, we will have following output:**
