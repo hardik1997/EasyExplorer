@@ -1,116 +1,237 @@
-# Requirements
-It requires networkx python library to execute.
-So first install networkx library.
+## About
 
-`pip install networkx`
+This module integrates [Dropwizard Metrics library](http://metrics.dropwizard.io/) with Spring, and provides Java annotation based configuration.
 
-# Usage
+## Working
 
-`python [file.py] [input_file_path] [output_file_path]`
-- input_file_path : path of the graph input file.
-- output_file_path : path of the file where output of the program will be stored.
+* Creates metrics and proxies beans which contain methods annotated with `@Timed`, `@Metered`, `@ExceptionMetered`, and `@Counted`
+* Registers a `Gauge` for beans which have members annotated with `@Gauge` and `@CachedGauge`
+* Autowires Timers, Meters, Counters and Histograms into fields annotated with `@Metric`
+* Registers with the `HealthCheckRegistry` any beans which extend the class `HealthCheck`
+* Registers and Creates reporters, those reporters are used to report the monitored data.
+* Registers Jvm metrics and metric sets.
 
-# Algorithm
-- Consider a directed network G(V, E) over a set of nodes V and a set of edges E. We first convert G(V, E) to an equivalent undirected bipartite graph B(V_in, V_out, E).
-- The bipartite graph is built by splitting the node set V into two node sets Vin(-ve) and Vout(+ve), where a node u in G is converted to two nodes u_in and u_out in B, and nodes u_in and u_out are connected to the in-edges and out-edges of node u respectively.
-- A matching is a set of edges that share no common node. A matching with the maximum number of edges is called a maximum matching.
-  We can find number of driver nodes, with only one maximum bipartite matching, So we don't have enumerate all the maximum matchings.
-  
-- For a directed network G(V, E), find its corresponding bipartite graph B(V_out, V_in, E). Let the initial matching M = {};
-- Find all the alternating paths of all unmatched nodes in V_in, and store the nodes of alternate paths in V_in as `candidate nodes`.                  
-`Candidate nodes are nodes, which might become driver nodes`                       
- We used Breadth First Search to find if there exist an augmenting path or not.                                      
-  
- ``` 
-   def breadthfirstSearch(self, f):
-        isAvailable = False
-        del self.unmatched[:]
-        for node in self.Graph:
-            self.d[node] = 0
-            if self.marked[node] == None and node < 0:
-                self.unmatched.append(node)
-        for node in self.unmatched:
-            for src in self.Graph.neighbors(node):
-                if self.d[src] == 0:
-                    self.d[src] = self.d[node] + 1
-                    if self.marked[src] == None:
-                        isAvailable = True
-                    else:
-                        self.d[self.marked[src]] = self.d[src] + 1
-                        self.unmatched.append(self.marked[src])
-        return isAvailable       
- ```
+
+## Usage
+
+```java
+import com.metrics.configuration.annotation.AbstractMetricConfiguration;
+import com.metrics.configuration.annotation.MetricsSupport;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+@MetricsSupport
+public class DropwizardMetricsConfiguration extends AbstractMetricConfiguration {
+
+    @Override
+    public void configureReporters() {
+        registerReporter("es", "elastic-search", "/mnt1/config/elasticsearch.xml");
+        registerReporter("console", "console", "");
+    }
     
+}
+```
 
-- If set of alternate paths contain augmenting paths, expand all augmenting paths and obtain a new matching M’. Clear all candidate nodes, M = M’ and return to step 2.                               
-  We used DepthFirstSearch to find new matching M'.                              
-  
-  
- ``` 
-    def depthFirstSearch(self, v):
-        for node in self.Graph.neighbors(v):
-            if self.d[node] == self.d[v] + 1:
-                self.d[node] = 0
-                if self.marked[node] == None or self.depthFirstSearch(self.marked[node]):
-                    self.marked[node] = v
-                    self.marked[v] = node
-                    return True
-        return False                      
- ```  
+A @Configuration class annotated with @MetricsSupport is necessary to use all annotation bean post processors. 
+* `registerReporter(reporter_name, reporter_type, reporter_properties_file_path)` - registers reporters
+
+
+## Dropwizard Metrics
+
+### Meters
+
+A meter measures the rate of events over time (e.g., “requests per second”). In addition to the mean rate, meters also track 1-, 5-, and 15-minute moving averages.
+
+```java
+@Metered(name = "meter_name", reporterNames = {reporter_names})
+public void handleRequest(Request request, Response response) {
+    // etc
+}
+```
+
+This meter will measure the rate of requests in requests per second.
+
+
+### Gauges
+
+A gauge is an instantaneous measurement of a value.
+
+```java
+public class QueueManager {
+    private final Queue queue;
+    
+    public QueueManager(String name) {
+        this.queue = new Queue();
+        //etc; 
         
-- If there exists no augmenting path, then the the unmatched nodes are the driver nodes of G.                   
-- Now we have all AU, AS and SSSU nodes.                      
-
-
-  `AU : always unsaturated nodes. The nodes which are unmatched in all maximum matchings.`                                                        
-  `AS : always saturated nodes. The nodes which are matched in all maximum matchings.`                                                                             
-  `SSSU : sometimes saturated, sometimes unsaturated nodes. The nodes which are saturated in some maximum matchings and unsaturated     in some matchings.` 
-
-- The time complexity of the above algorithm is the same as that of the Hopcroft-Karp algorithm, which is O(N^1/2L).             
-```
-N_D : Number of driver nodes
-
-Note that in Type-I classification, we classify a node to be
-1) Nc_1: critical if in its absence we have to control more driver nodes. For example, remove one node in the middle of a directed path will cause N_D increase. 
-2) Nr_1: redundant if in its absence we need to control less driver nodes. For example, remove one leaf node in a star will decrease N_D by 1. 
-3) No_1 :ordinary if in its absence we need to control the same number of driver nodes. For example, remove the central hub in a star will not change N_D at all.
-
-In Type-II classification, we classify a node to be 
-1) Nc_2: critical if it belongs to all the driver node sets, i.e. we have to always control it. We can rigorously prove that a node is critical if and only if it has zero in-degree, i.e. kin=0. 
-2) Nr_2: redundant if it belongs to no driver node sets, so we never need to control them. 
-3) No_2: ordinary if it belongs to some but not all driver node sets.
+        @Gauge(name = "gauge_name", reporterNames = {reporter_names}
+        int len = queue.length;
+    }
+    
+}
 ```
 
+When this gauge is measured, it will return the number of jobs in the queue.
 
-# Output 
-**The output file will contain a table:**                           
-```
-Column1 : node                                  
-Column2 : type of in_node(-node)                                  
-Column3 : Change in total driver nodes if we remove in_node(-node)                                   
-Column4 : Change in driver nodes in in_part if we remove in_node(-node)                            
-Column5 : type of out_node(+node)                                
-Column6 : Change in total driver nodes if we remove out_node(+node)                              
-Column7 : Change in driver nodes in in_part if we remove out_node(+node)                              
-Column8 : Change in total driver nodes if we remove this node(-node and +node)                            
-Column9 : Change in driver nodes in in_part if we remove this node(-node and +node) 
-```
-**Notation used in above table:**                   
-```
-Vin(-ve) - copy of the V which is connected to in-edge                
-Vin(+ve) - copy of the V which is connected to out-edge          
-node - column titled node describes whether it is AU,AS or SSSU            
-d_global - change in total number of driver nodes after removing a node          
-d_in - change in total number of driver nodes in in-part after removing a node$             
+
+### Counters
+
+A counter is just a gauge for an AtomicLong instance. You can increment or decrement its value.
+
+
+### Histograms
+
+A histogram measures the statistical distribution of values in a stream of data. In addition to minimum, maximum, mean, etc., it also measures median, 75th, 90th, 95th, 98th, 99th, and 99.9th percentiles.
+
+
+### Timers
+
+A timer measures both the rate that a particular piece of code is called and the distribution of its duration.
+
+```java
+@Timed(name = "timer_name", reporterNames = {reporter_names})
+public String handleRequest(Request request, Response response) {
+    // etc;
+    return "OK";
+}
 ```
 
-**In the console, we will have following output:**
+This timer will measure the amount of time it takes to process each request in nanoseconds and provide a rate of requests in requests per second.
+
+
+### Health Checks
+
+Metrics also has the ability to centralize your service’s health checks with the metrics-healthchecks module.
+
+Implement a HealthCheck subclass:
+
+```java
+public class DatabaseHealthCheck extends HealthCheck {
+    private final Database database;
+    
+    public DatabaseHealthCheck(Database database) {
+        this.database = database;
+    }
+    
+    @Override
+    public HealthCheck.Result check() throws Exception {
+        if (database.isConnected()) {
+            return HealthCheck.Result.healthy();
+        } else {
+            return HealthCheck.Result.unhealthy("Cannot connect to " + database.getUrl());
+        }
+    }
+}
 ```
-Nd : Number of driver nodes
-nc_1 : Number of Type-I critical nodes
-nr_1 : Number of Type-I redundant nodes
-no_1 : Number of Type-I ordinary nodes
-nc_2 : Number of Type-II critical nodes
-nr_2 : Number of Type-II redundant nodes
-no_2 : Number of Type-II ordinary nodes
+
+
+## Reporters
+
+### ElasticSearch Reporter
+
+#### Configuration
+
+Define elastic search reporter in configuration class.
+
+```java
+public void configureReporters() {
+        registerReporter("es", "elastic-search", "/mnt1/config/elasticsearch.xml");
+```
+
+elasticsearch.xml will contain:
+
+```<reporter period="1m" hosts="localhost:9200"/>```
+
+##### Options
+
+    hosts: A list of hosts used to connect to, must be in the format hostname:port, default is localhost:9200
+    timeout: Milliseconds to wait for an established connections, before the next host in the list is tried. Defaults to 1000
+    bulkSize: Defines how many metrics are sent per bulk requests, defaults to 2500
+    index: The name of the index to write to, defaults to metrics
+    indexDateFormat: The date format to make sure to rotate to a new index, defaults to yyyy-MM
+    timestampFieldname: The field name of the timestamp, defaults to @timestamp, which makes it easy to use with kibana
+
+#### JSON Format of metrics
+
+This is how the serialized metrics looks like in elasticsearch
+
+##### Counter
+
+```
+{
+  "name": "counter",
+  "@timestamp": "2018-07-040T09:29:58.000+0000",
+  "count": 18
+}
+```
+
+##### Timer
+
+```
+{
+  "name" : "timer",
+  "@timestamp" : "2018-07-04T09:43:58.000+0000",
+  "count" : 114,
+  "max" : 109.681,
+  "mean" : 5.439666666666667,
+  "min" : 2.457,
+  "p50" : 4.3389999999999995,
+  "p75" : 5.0169999999999995,
+  "p95" : 8.37175,
+  "p98" : 9.6832,
+  "p99" : 94.68429999999942,
+  "p999" : 109.681,
+  "stddev" : 9.956913151098842,
+  "m15_rate" : 0.10779994503690074,
+  "m1_rate" : 0.07283351433589833,
+  "m5_rate" : 0.10101298115113727,
+  "mean_rate" : 0.08251056571678642,
+  "duration_units" : "milliseconds",
+  "rate_units" : "calls/second"
+}
+```
+
+##### Meter
+
+```
+{
+  "name" : "meter",
+  "@timestamp" : "2018-07-04T09:29:58.000+0000",
+  "count" : 224,
+  "m1_rate" : 0.3236309568191993,
+  "m5_rate" : 0.45207208204948995,
+  "m15_rate" : 0.5014348927301423,
+  "mean_rate" : 0.4135529888278531,
+  "units" : "events/second"
+}
+```
+
+##### Histogram
+
+```
+{
+  "name" : "histogram",
+  "@timestamp" : "2018-07-04T09:29:58.000+0000",
+  "count" : 114,
+  "max" : 109.681,
+  "mean" : 5.439666666666667,
+  "min" : 2.457,
+  "p50" : 4.3389999999999995,
+  "p75" : 5.0169999999999995,
+  "p95" : 8.37175,
+  "p98" : 9.6832,
+  "p99" : 94.68429999999942,
+  "p999" : 109.681,
+  "stddev" : 9.956913151098842,}
+}
+```
+
+##### Gauge
+
+```
+{
+  "name" : "gauge",
+  "@timestamp" : "2018-07-04T09:29:58.000+0000",
+  "value" : 123
+}
 ```
