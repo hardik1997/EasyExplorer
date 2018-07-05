@@ -1,6 +1,6 @@
 ## About
 
-This module integrates [Dropwizard Metrics library](http://metrics.dropwizard.io/) with Spring, and provides Java annotation based configuration.
+This module integrates [Dropwizard Metrics library] with Spring, and provides Java annotation based configuration.
 
 ## Working
 
